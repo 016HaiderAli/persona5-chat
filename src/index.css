@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --p5-red: #e61e14;
+  --p5-black: #0a0a0a;
+  --p5-white: #ffffff;
+  --p5-yellow: #f5d407;
+  --p5-grey: #1a1a1a;
+  --p5-dark-grey: #111111;
+  --p5-accent: #ff4444;
+
+  /* Light theme */
+  --bg: #f0f0f0;
+  --surface: #ffffff;
+  --text: #111111;
+  --text-secondary: #555555;
+  --border: #dddddd;
+}
+
+[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --surface: #1a1a1a;
+  --text: #ffffff;
+  --text-secondary: #aaaaaa;
+  --border: #333333;
+}
+
+[data-theme="persona5"] {
+  --bg: #0a0a0a;
+  --surface: #1a0000;
+  --text: #ffffff;
+  --text-secondary: #ffaaaa;
+  --border: #e61e14;
+}
+
+[data-theme="p5yellow"] {
+  --bg: #f5d407;
+  --surface: #0a0a0a;
+  --text: #0a0a0a;
+  --text-secondary: #333333;
+  --border: #0a0a0a;
+}
+
+[data-theme="midnight"] {
+  --bg: #0d0d1a;
+  --surface: #1a1a2e;
+  --text: #e0e0ff;
+  --text-secondary: #8888cc;
+  --border: #3333aa;
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--p5-red);
+  border-radius: 3px;
+}
