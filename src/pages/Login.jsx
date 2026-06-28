@@ -48,16 +48,11 @@ function Login() {
 
   return (
     <div className="login-page">
-      {/* Diagonal background slashes */}
-      <div className="login-bg">
-        <div className="slash slash-1" />
-        <div className="slash slash-2" />
-        <div className="slash slash-3" />
-      </div>
+      <div className="login-bg-circle c1" />
+      <div className="login-bg-circle c2" />
 
-      {/* Theme selector */}
       <div className="theme-bar">
-        {["persona5", "p5yellow", "dark", "midnight", "light"].map((t) => (
+        {["nightowl", "lightaqua"].map((t) => (
           <button
             key={t}
             className={`theme-dot theme-${t} ${theme === t ? "active" : ""}`}
@@ -67,23 +62,26 @@ function Login() {
         ))}
       </div>
 
-      {/* Login card */}
       <div className="login-card">
-        <div className="login-header">
-          <div className="login-tag">PHANTOM THIEVES</div>
-          <h1 className="login-title">
-            {isRegister ? "JOIN US" : "WELCOME BACK"}
-          </h1>
-          <p className="login-subtitle">
-            {isRegister ? "Create your account" : "Sign in to continue"}
-          </p>
+        <div className="login-logo">
+          <div class="login-logo-icon">⚡</div>
+          <div className="login-logo-text">
+            Phantom<span>Chat</span>
+          </div>
         </div>
+
+        <h1 className="login-title">
+          {isRegister ? "Create account" : "Welcome back"}
+        </h1>
+        <p className="login-subtitle">
+          {isRegister ? "Join PhantomChat today" : "Sign in to continue"}
+        </p>
 
         {error && <div className="login-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
-          <div className="input-group">
-            <label>EMAIL</label>
+          <div className="form-group">
+            <label>Email</label>
             <input
               type="email"
               placeholder="your@email.com"
@@ -92,8 +90,8 @@ function Login() {
               required
             />
           </div>
-          <div className="input-group">
-            <label>PASSWORD</label>
+          <div className="form-group">
+            <label>Password</label>
             <input
               type="password"
               placeholder="••••••••"
@@ -102,15 +100,12 @@ function Login() {
               required
             />
           </div>
-
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "LOADING..." : isRegister ? "REGISTER" : "LOGIN"}
+            {loading ? "Loading..." : isRegister ? "Create account" : "Sign in"}
           </button>
         </form>
 
-        <div className="login-divider">
-          <span>OR</span>
-        </div>
+        <div className="login-divider"><span>OR</span></div>
 
         <button className="btn-google" onClick={handleGoogle}>
           <img src="https://www.google.com/favicon.ico" alt="Google" />
@@ -120,7 +115,7 @@ function Login() {
         <p className="login-switch">
           {isRegister ? "Already have an account?" : "New here?"}{" "}
           <span onClick={() => setIsRegister(!isRegister)}>
-            {isRegister ? "Login" : "Register"}
+            {isRegister ? "Sign in" : "Create account"}
           </span>
         </p>
       </div>

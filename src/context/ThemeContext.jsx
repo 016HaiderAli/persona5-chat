@@ -3,14 +3,13 @@ import { createContext, useContext, useState } from "react";
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("persona5");
+  const [theme, setTheme] = useState("nightowl");
 
   const changeTheme = (newTheme) => {
     setTheme(newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
   };
 
-  // Set initial theme on load
   document.documentElement.setAttribute("data-theme", theme);
 
   return (

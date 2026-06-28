@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { collection, query, onSnapshot, addDoc, serverTimestamp, getDocs } from "firebase/firestore";
-import { signOut } from "firebase/auth";
-import { auth, db } from "../firebase/firebase";
+import { collection, query, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { db, auth } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useRooms } from "../hooks/useRooms";
@@ -10,48 +9,37 @@ function Sidebar({ activeChat, setActiveChat, showSidebar }) {
   const { rooms, loading } = useRooms();
   const { user } = useAuth();
   const { theme, changeTheme } = useTheme();
-  // Create Room
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
-  // Adding DM Section
   const [users, setUsers] = useState([]);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [userSearch, setUserSearch] = useState("");
+  const [search, setSearch] = useState("");
 
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
-
-  // Create Room
-  const handleCreateRoom = async () => {
-  if (!newRoomName.trim()) return;
-  try {
-    await addDoc(collection(db, "rooms"), {
-      name: newRoomName.trim(),
-      createdBy: user.uid,
-      createdAt: serverTimestamp(),
-      emoji: "💬"
-    });
-    setNewRoomName("");
-    setShowCreateRoom(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // User Search
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-      const usersData = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(u => u.id !== user?.uid);
-      setUsers(usersData);
+      setUsers(
+        snapshot.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((u) => u.id !== user?.uid)
+      );
     });
     return unsub;
   }, [user]);
 
-  // Start Direct Message
-  const startDM = async (otherUser) => {
+  const handleCreateRoom = async () => {
+    if (!newRoomName.trim()) return;
+    await addDoc(collection(db, "rooms"), {
+      name: newRoomName.trim(),
+      createdBy: user.uid,
+      createdAt: serverTimestamp(),
+      emoji: "💬",
+    });
+    setNewRoomName("");
+    setShowCreateRoom(false);
+  };
+
+  const startDM = (otherUser) => {
     const dmId = [user.uid, otherUser.id].sort().join("_");
     setActiveChat({
       id: dmId,
@@ -63,168 +51,141 @@ function Sidebar({ activeChat, setActiveChat, showSidebar }) {
   };
 
   const themes = [
-    { id: "persona5", color: "#e61e14", label: "P5" },
-    { id: "p5yellow", color: "#f5d407", label: "YLW" },
-    { id: "dark", color: "#333333", label: "DRK" },
-    { id: "midnight", color: "#3333aa", label: "MID" },
-    { id: "light", color: "#dddddd", label: "LGT" },
+    { id: "nightowl", label: "🌙" },
+    { id: "lightaqua", label: "☀️" },
   ];
 
+  const filteredRooms = rooms.filter((r) =>
+    (r.name || "").toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className={`sidebar ${showSidebar ? "show" : ""}`}>
+    <div className={`chat-list ${showSidebar ? "show" : ""}`}>
 
-      {/* User Profile Header */}
-      <div className="sidebar-profile">
-        <div className="profile-avatar">
-          {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-        </div>
-        <div className="profile-info">
-          <div className="profile-name">
-            {user?.displayName || user?.email?.split("@")[0]}
+      {/* Header */}
+      <div className="cl-header">
+        <div className="cl-top-row">
+          <h2 className="cl-title">All Chats</h2>
+          <div className="cl-theme-pills">
+            {themes.map((t) => (
+              <button
+                key={t.id}
+                className={`cl-theme-btn ${theme === t.id ? "active" : ""}`}
+                onClick={() => changeTheme(t.id)}
+                title={t.id}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
-          <div className="profile-status">● Online</div>
         </div>
-        <button className="logout-btn" onClick={handleLogout} title="Logout">
-          ⏻
-        </button>
-      </div>
-
-      {/* Theme Switcher */}
-      <div className="sidebar-themes">
-        {themes.map((t) => (
-          <button
-            key={t.id}
-            className={`theme-pill ${theme === t.id ? "active" : ""}`}
-            style={{ background: t.color }}
-            onClick={() => changeTheme(t.id)}
-            title={t.id}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Search Bar */}
-      <div className="sidebar-search">
-        <input type="text" placeholder="🔍  Search rooms..." />
-      </div>
-
-      {/* Rooms List */}
-      <div className="rooms-list">
-        <div className="rooms-header">
-          <h3>PUBLIC ROOMS</h3>
-          <button className="create-room-btn" onClick={() => setShowCreateRoom(true)}>
-            +
-          </button>
+        <div className="cl-search-wrap">
+          <span className="cl-search-icon">🔍</span>
+          <input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+      </div>
+
+      {/* Rooms */}
+      <div className="cl-section-header">
+        <span className="cl-section-label">Public Rooms</span>
+        <button
+          className="cl-add-btn"
+          onClick={() => setShowCreateRoom(true)}
+          title="Create Room"
+        >+</button>
+      </div>
+
+      <div className="cl-list">
         {loading ? (
-          <p style={{ padding: "20px", color: "var(--text-secondary)" }}>
-            Loading...
-          </p>
-        ) : rooms.length === 0 ? (
-          <p style={{ padding: "20px", color: "var(--text-secondary)" }}>
-            No rooms yet
-          </p>
+          <div className="cl-empty">Loading...</div>
+        ) : filteredRooms.length === 0 ? (
+          <div className="cl-empty">No rooms yet</div>
         ) : (
-          rooms.map((room) => (
+          filteredRooms.map((room) => (
             <div
               key={room.id}
-              className={`room-item ${activeChat?.id === room.id ? "active" : ""}`}
-              onClick={() =>
-                setActiveChat({
-                  id: room.id,
-                  name: room.name || "Room",
-                  type: "rooms",
-                })
-              }
+              className={`cl-item ${activeChat?.id === room.id ? "active" : ""}`}
+              onClick={() => setActiveChat({ id: room.id, name: room.name, type: "rooms" })}
             >
-              <div className="room-icon">{room.emoji || "#"}</div>
-              <div className="room-info">
-                <div className="room-name">{room.name || "Unnamed Room"}</div>
-                <div className="room-preview">Tap to join</div>
+              <div className="cl-av cl-av-room">
+                {room.emoji || "#"}
+              </div>
+              <div className="cl-info">
+                <div className="cl-name">{room.name || "Room"}</div>
+                <div className="cl-preview">
+                  {room.lastMessage || "Tap to join"}
+                </div>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* DM Section */}
-      <div className="rooms-header" style={{ marginTop: "10px" }}>
-        <h3>DIRECT MESSAGES</h3>
+      {/* DMs */}
+      <div className="cl-section-header">
+        <span className="cl-section-label">Direct Messages</span>
         <button
-          className="create-room-btn"
+          className="cl-add-btn"
           onClick={() => setShowUserSearch(!showUserSearch)}
-        >
-          ✏️
-        </button>
+          title="New DM"
+        >✏️</button>
       </div>
 
-      {/* User Search */}
       {showUserSearch && (
-        <div className="user-search-box">
+        <div className="cl-user-search">
           <input
-            type="text"
             placeholder="Search users..."
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
             autoFocus
           />
-          <div className="user-search-results">
-            {users
-              .filter(u =>
-                (u.displayName || u.email)
-                  .toLowerCase()
-                  .includes(userSearch.toLowerCase())
-              )
-              .map(u => (
-                <div
-                  key={u.id}
-                  className="user-result-item"
-                  onClick={() => startDM(u)}
-                >
-                  <div className="user-result-avatar">
-                    {(u.displayName || u.email)?.[0]?.toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="user-result-name">
-                      {u.displayName || u.email?.split("@")[0]}
-                    </div>
-                    <div className="user-result-email">{u.email}</div>
-                  </div>
-                </div>
-              ))}
-            {users.filter(u =>
-              (u.displayName || u.email)
+          {users
+            .filter((u) =>
+              (u.displayName || u.email || "")
                 .toLowerCase()
                 .includes(userSearch.toLowerCase())
-            ).length === 0 && (
-              <p className="no-users">No users found</p>
-            )}
-          </div>
+            )
+            .map((u) => (
+              <div
+                key={u.id}
+                className="cl-user-item"
+                onClick={() => startDM(u)}
+              >
+                <div className="cl-av">
+                  {(u.displayName || u.email)?.[0]?.toUpperCase()}
+                </div>
+                <div className="cl-info">
+                  <div className="cl-name">
+                    {u.displayName || u.email?.split("@")[0]}
+                  </div>
+                  <div className="cl-preview">{u.email}</div>
+                </div>
+              </div>
+            ))}
         </div>
       )}
 
-      {/* Create Room */}
-      {showCreateRoom && 
-        (
-          <div className="create-room-modal">
-            <p>ROOM NAME</p>
-            <input
-              type="text"
-              placeholder="e.g. Study Hall"
-              value={newRoomName}
-              onChange={(e) => setNewRoomName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCreateRoom()}
-              autoFocus
-            />
-            <div className="modal-buttons">
-              <button className="btn-confirm" onClick={handleCreateRoom}>CREATE</button>
-              <button className="btn-cancel" onClick={() => setShowCreateRoom(false)}>CANCEL</button>
-            </div>
+      {/* Create Room Modal */}
+      {showCreateRoom && (
+        <div className="cl-modal">
+          <p>Room Name</p>
+          <input
+            value={newRoomName}
+            onChange={(e) => setNewRoomName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCreateRoom()}
+            placeholder="e.g. Gaming"
+            autoFocus
+          />
+          <div className="cl-modal-btns">
+            <button className="btn-confirm" onClick={handleCreateRoom}>Create</button>
+            <button className="btn-cancel" onClick={() => setShowCreateRoom(false)}>Cancel</button>
           </div>
-        )
-      }
-
+        </div>
+      )}
     </div>
   );
 }

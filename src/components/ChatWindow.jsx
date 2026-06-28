@@ -1,8 +1,9 @@
 import { useMessages } from "../hooks/useMessages";
 import { useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Search, Phone, MoreHorizontal, CheckCheck } from "lucide-react";
 
-function ChatWindow({ activeChat }) {
+function ChatWindow({ activeChat, setShowPanel, showPanel }) {
   const { messages, loading } = useMessages(activeChat?.id, activeChat?.type);
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
@@ -13,48 +14,80 @@ function ChatWindow({ activeChat }) {
 
   const formatTime = (timestamp) => {
     if (!timestamp) return "";
-    const date = timestamp.toDate();
-    return date.toLocaleTimeString("en-US", { 
-      hour: "2-digit", 
+    return timestamp.toDate().toLocaleTimeString("en-US", {
+      hour: "2-digit",
       minute: "2-digit",
-      hour12: false 
+      hour12: false,
     });
   };
 
-  if (!activeChat) {
-    return (
-      <div className="chat-window empty">
-        <h2>SELECT A ROOM TO START TAKING A HEIST...</h2>
-      </div>
-    );
-  }
-
   return (
-    <div className="chat-window p5-style">
+    <div className="chat-window">
       <div className="chat-header">
-        <h3>{activeChat.type === "dms" ? "💬" : "#"} {activeChat.name}</h3>
+        <div className="ch-av">
+          {activeChat.type === "dms" ? "💬" : "🌐"}
+        </div>
+        <div className="ch-info">
+          <div className="ch-name">{activeChat.name}</div>
+          <div className="ch-sub">
+            {activeChat.type === "rooms" ? "Public Room" : "Direct Message"}
+          </div>
+        </div>
+        <div className="ch-actions">
+          <button className="ch-btn" title="Search">
+            <Search size={18} />
+          </button>
+          <button className="ch-btn" title="Call">
+            <Phone size={18} />
+          </button>
+          <button
+            className={`ch-btn ${showPanel ? "active" : ""}`}
+            onClick={() => setShowPanel(!showPanel)}
+            title="Info"
+          >
+            <MoreHorizontal size={18} />
+          </button>
+        </div>
       </div>
-      
-      <div className="messages-container">
+
+      <div className="msgs-container">
         {loading ? (
-          <p>Loading messages...</p>
+          <div className="msgs-loading">Loading messages...</div>
         ) : messages.length === 0 ? (
-          <p className="no-messages">No messages yet. Say hello!</p>
+          <div className="msgs-empty">
+            <span>👋</span>
+            <p>No messages yet — say hello!</p>
+          </div>
         ) : (
-          messages.map(msg => (
-            <div key={msg.id} className={`message-p5 ${msg.uid === user?.uid ? 'own' : ''}`}>
-              <div className="message-avatar">
-                {msg.authorName?.[0]?.toUpperCase() || '?'}
-              </div>
-              <div className="message-content">
-                <div className="message-bubble-p5">
-                  <div className="message-author-p5">{msg.authorName || 'Anonymous'}</div>
-                  <div className="message-text-p5">{msg.text}</div>
+          messages.map((msg) => {
+            const isOwn = msg.uid === user?.uid;
+            const initial = (msg.authorName || "?")?.[0]?.toUpperCase();
+            return (
+              <div key={msg.id} className={`msg ${isOwn ? "own" : "other"}`}>
+                <div className={`msg-av ${isOwn ? "own" : ""}`}>
+                  {initial}
                 </div>
-                <div className="timestamp-p5">{formatTime(msg.createdAt)}</div>
+                <div className="msg-body">
+                  {!isOwn && (
+                    <div className="msg-name">{msg.authorName}</div>
+                  )}
+                  <div className={`bubble ${isOwn ? "own" : ""}`}>
+                    {msg.text}
+                  </div>
+                  <div className="msg-footer">
+                    <span className="msg-time">{formatTime(msg.createdAt)}</span>
+                    {isOwn && (
+                      <CheckCheck
+                        size={14}
+                        className="msg-tick"
+                        strokeWidth={2.5}
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

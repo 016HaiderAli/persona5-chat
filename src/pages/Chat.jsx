@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import ChatWindow from "../components/ChatWindow";
 import MessageInput from "../components/MessageInput";
-import { doc, setDoc, getDoc, serverTimestamp, collection, query, onSnapshot, where } from "firebase/firestore";
+import RightPanel from "../components/RightPanel";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 import "../styles/chat.css";
+import { MessageSquare, Users, Archive, User, Edit, Power } from "lucide-react";
 
 function Chat() {
   const [activeChat, setActiveChat] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [showPanel, setShowPanel] = useState(true);
   const { user } = useAuth();
 
-  // Create user profile in Firestore when they log in
   useEffect(() => {
     if (user) {
       const userRef = doc(db, "users", user.uid);
@@ -21,11 +24,10 @@ function Chat() {
         if (!docSnap.exists()) {
           setDoc(userRef, {
             email: user.email,
-            displayName: user.displayName || user.email.split('@')[0],
+            displayName: user.displayName || user.email.split("@")[0],
             photoURL: user.photoURL || "",
             createdAt: serverTimestamp(),
-            badge: "Recruit",
-            lastSeen: serverTimestamp()
+            lastSeen: serverTimestamp(),
           });
         } else {
           setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true });
@@ -34,74 +36,81 @@ function Chat() {
     }
   }, [user]);
 
-  // Listen for unread messages (simplified - will improve later)
-  useEffect(() => {
-    if (!user || !activeChat) return;
-    
-    const messagesRef = collection(db, activeChat.type, activeChat.id, "messages");
-    const q = query(messagesRef, where("uid", "!=", user.uid));
-    
-    const unsub = onSnapshot(q, (snapshot) => {
-      // Count messages from others (simplified logic)
-      setUnreadCount(snapshot.size > 0 ? Math.floor(Math.random() * 5) : 0);
-    });
-    
-    return unsub;
-  }, [user, activeChat]);
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   return (
-    <div className="messenger-layout">
-      {/* Top Navigation Bar */}
-      <div className="top-nav">
-        <div className="nav-left">
-          <button 
-            className="nav-btn back-btn" 
-            onClick={() => setShowSidebar(!showSidebar)}
-          >
-            ←
-          </button>
-          <div className="app-logo">
-            <span className="logo-text">PHANTOM CHAT</span>
+    <div className="app-layout">
+
+      {/* Icon Bar */}
+      <div className="icon-bar">
+        <div className="ib-logo">⚡</div>
+        <div className="ib-items">
+          <div className="ib-item active" title="All Chats">
+            <MessageSquare size={22} />
+            <span className="ib-label">Chats</span>
+          </div>
+          <div className="ib-item" title="Friends">
+            <Users size={22} />
+            <span className="ib-label">Friends</span>
+          </div>
+          <div className="ib-item" title="Archive">
+            <Archive size={22} />
+            <span className="ib-label">Archive</span>
+          </div>
+          <div className="ib-item" title="Profile">
+            <User size={22} />
+            <span className="ib-label">Profile</span>
           </div>
         </div>
-        
-        <div className="nav-right">
-          <button className="nav-btn icon-btn" title="Notifications">
-            🔔
-            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-          </button>
-          <button className="nav-btn icon-btn" title="Settings">
-            ⚙️
-          </button>
-          <div className="user-avatar-small">
-            {user?.displayName?.[0] || user?.email?.[0]}
+        <div className="ib-bottom">
+          <div className="ib-user">
+            {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
           </div>
+          <button className="power-btn" onClick={handleLogout} title="Logout">
+            <Power size={16} />
+          </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="main-content">
-        <Sidebar 
-          activeChat={activeChat} 
-          setActiveChat={setActiveChat}
-          showSidebar={showSidebar}
-        />
-        <div className="chat-area">
-          {activeChat ? (
-            <>
-              <ChatWindow activeChat={activeChat} />
-              <MessageInput activeChat={activeChat} />
-            </>
-          ) : (
-            <div className="no-chat-selected">
-              <div className="empty-state">
-                <h2>Select a conversation</h2>
-                <p>Choose from your rooms or start a new chat</p>
-              </div>
+      {/* Chat List */}
+      <Sidebar
+        activeChat={activeChat}
+        setActiveChat={setActiveChat}
+        showSidebar={showSidebar}
+      />
+
+      {/* Main Chat */}
+      <div className="chat-main">
+        {activeChat ? (
+          <>
+            <ChatWindow
+              activeChat={activeChat}
+              setShowPanel={setShowPanel}
+              showPanel={showPanel}
+            />
+            <MessageInput activeChat={activeChat} />
+          </>
+        ) : (
+          <div className="no-chat-selected">
+            <div className="empty-state">
+              <div className="empty-icon">⚡</div>
+              <h2>Welcome to PhantomChat</h2>
+              <p>Select a conversation to start messaging</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* Right Panel */}
+      {activeChat && showPanel && (
+        <RightPanel
+          activeChat={activeChat}
+          setShowPanel={setShowPanel}
+        />
+      )}
+
     </div>
   );
 }
