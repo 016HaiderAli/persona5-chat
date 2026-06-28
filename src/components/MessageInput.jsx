@@ -3,6 +3,7 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import { Send, Mic, Paperclip, Smile } from "lucide-react";
+import { playSentSound } from "../utils/sounds";
 
 function MessageInput({ activeChat }) {
   const [text, setText] = useState("");
@@ -12,6 +13,7 @@ function MessageInput({ activeChat }) {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim() || !activeChat) return;
+    
     try {
       await addDoc(collection(db, activeChat.type, activeChat.id, "messages"), {
         text: text.trim(),
@@ -21,6 +23,7 @@ function MessageInput({ activeChat }) {
         type: "text",
       });
       setText("");
+      playSentSound(); // ← Yeh line ab bilkul sahi chalegi
     } catch (error) {
       console.error("Error sending:", error);
     }
@@ -63,3 +66,4 @@ function MessageInput({ activeChat }) {
 }
 
 export default MessageInput;
+  
