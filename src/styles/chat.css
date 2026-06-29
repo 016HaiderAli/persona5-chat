@@ -555,6 +555,12 @@
 
 .msg.other { align-self: flex-start; }
 
+/* Other messages ke text aur footer ko left side align rakhna */
+.msg.other .bubble-wrap {
+  align-items: flex-start !important;
+  margin-right: auto !important;
+}
+
 .msg.own {
   align-self: flex-end;
   flex-direction: row-reverse;
@@ -628,10 +634,12 @@
   color: var(--text-muted);
 }
 
-.msg-tick {
-  color: var(--aqua);
-  flex-shrink: 0;
-}
+.msg-ticks { display: flex; align-items: center; margin-left: 2px; }
+
+.tick { fill: #8a9bb0; transition: fill 0.3s; }
+.tick-read { fill: var(--aqua); }
+.tick-delivered { fill: #8a9bb0; }
+.tick-sent { fill: #8a9bb0; }
 
 /* Scrollbar */
 .msgs-container::-webkit-scrollbar { width: 4px; }
@@ -913,10 +921,10 @@
   max-width: 100%;
 }
 
+/* Own messages ke texts aur footer ko text box ke sath chipkana */
 .msg.own .bubble-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-end !important;
+  margin-left: auto !important; /* Messages ko right side push karega */
 }
 
 .reaction-picker {
@@ -996,5 +1004,148 @@
 }
 
 .reaction-badge.reacted span {
+  color: var(--aqua);
+}
+
+/* --- FIXED TICK ALIGNMENT OVERRIDE --- */
+/* --- WHATSAPP TICK OVERRIDE (append at end of chat.css) --- */
+
+/* Container for time + ticks: keep them inline and snug to the bubble */
+.chat-window .msg-footer {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 4px !important;
+  position: static !important;
+  width: auto !important;
+  padding-right: 2px !important;
+  padding-left: 2px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Left alignment for other people's messages */
+.chat-window .msg.other .msg-footer {
+  justify-content: flex-start !important;
+}
+
+/* Message body column layout preserved */
+.chat-window .msg-body {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important; /* own messages right aligned */
+}
+.chat-window .msg.other .msg-body {
+  align-items: flex-start !important;
+}
+
+/* Timestamp */
+.msg-time {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tick icon container — inherits color via currentColor */
+.msg-tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 16px;
+  color: var(--tick-gray, #88989d);
+  transform: translateY(1px); /* optical nudge for alignment */
+  line-height: 1;
+}
+
+/* States: single/double grey and double blue (read) */
+.msg-tick.sent   { color: var(--tick-gray, #88989d); } /* single grey */
+.msg-tick.delivered { color: var(--tick-gray, #88989d); } /* double grey */
+.msg-tick.read   { color: var(--tick-blue, #34b7f1); } /* double blue */
+
+/* If using the two-check SVG approach: hide the second check for .sent */
+.msg-tick.sent svg .check-two { display: none; }
+
+/* SVG sizing */
+.msg-tick svg { display: block; width: 18px; height: 14px; }
+
+/* If your project's base styles are very specific, you may increase specificity:
+   .chat-window .msg.own .msg-footer { ... } -- but try the above first. */
+
+/* === CONTEXT MENU === */   
+.context-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+/* This will control the context menu positioning */
+.context-menu {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 201;
+  min-width: 160px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  animation: ctxIn 0.15s ease-out;
+}
+
+/* This will control the animation for the context menu */
+@keyframes ctxIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Context menu items - Where it will be positioned*/
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.15s;
+  text-align: left;
+  font-weight: 500;
+}
+
+/* Hover effect for context menu items */
+.ctx-item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Danger action (e.g., delete) */
+.ctx-item.danger { color: #ff4757; }
+.ctx-item.danger:hover { background: rgba(255,71,87,0.1); }
+
+/* === INPUT AREA WRAP === */
+.input-area-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.emoji-picker-wrap {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 16px;
+  z-index: 300;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.input-icon-btn.active {
   color: var(--aqua);
 }
