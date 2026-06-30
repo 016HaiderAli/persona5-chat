@@ -1,11 +1,29 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, deleteDoc, updateDoc  } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { X, Image, Video, FileText, Link, Mic, BellOff, LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 function RightPanel({ activeChat, setShowPanel }) {
   const [members, setMembers] = useState([]);
+  const { user } = useAuth();
+  const [muted, setMuted] = useState(false);
 
+  {/* Function to handle leaving the room */}
+  const handleLeaveRoom = async () => {
+    if (!window.confirm("Leave this room?")) return;
+    // For now just close the panel — full leave logic needs room members tracking
+    setShowPanel(false);
+  };
+
+  {/* Mute/Unmute functionality */}
+  const handleMute = () => {
+    setMuted(!muted);
+    // Store mute preference locally for now
+    localStorage.setItem(`muted_${activeChat.id}`, !muted);
+  };
+
+  {/* Load mute state on mount */}
   useEffect(() => {
     if (!activeChat) return;
     const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
@@ -14,8 +32,10 @@ function RightPanel({ activeChat, setShowPanel }) {
     return unsub;
   }, [activeChat]);
 
+  {/* Determine if the active chat is a room or a direct message */}
   const isRoom = activeChat?.type === "rooms";
 
+  {/* Define the file types to display in the right panel */}
   const files = [
     { icon: <Image size={16} />, label: "Photos" },
     { icon: <Video size={16} />, label: "Videos" },
@@ -65,10 +85,12 @@ function RightPanel({ activeChat, setShowPanel }) {
 
       {isRoom && (
         <div className="rp-section">
-          <div className="rp-action-btn">
-            <BellOff size={14} /> Mute Room
+          
+          <div className="rp-action-btn" onClick={handleMute}>
+            <BellOff size={14} /> {muted ? "Unmute Room" : "Mute Room"}
           </div>
-          <div className="rp-action-btn">
+          
+          <div className="rp-action-btn danger" onClick={handleLeaveRoom}>
             <LogOut size={14} /> Leave Room
           </div>
         </div>

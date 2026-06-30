@@ -7,10 +7,35 @@
 }
 
 :root {
-  --aqua: #00d4aa;
-  --aqua-dark: #00b894;
-  --aqua-light: #e0faf5;
-  --aqua-mid: #00d4aa22;
+  --primary-brand: #0084FF;
+  --bg-main: #0B0E14;
+  --bg-surface: #1A1F26;
+  --text-main: #F5F7FA;
+  --text-muted: #8E9AA8;
+  --bubble-sent: var(--primary-brand);
+  --bubble-received: #242A32;
+  --border: rgba(255,255,255,0.08);
+  --surface-soft: rgba(255,255,255,0.05);
+  --surface-muted: rgba(255,255,255,0.08);
+  --highlight: rgba(0,132,255,0.16);
+
+  --aqua: var(--primary-brand);
+  --aqua-dark: #006ed7;
+  --aqua-light: #dbeaff;
+  --aqua-mid: rgba(0,132,255,0.14);
+
+  --bg: var(--bg-main);
+  --surface: var(--bg-surface);
+  --surface-2: #16202c;
+  --text: var(--text-main);
+  --text-secondary: var(--text-muted);
+  --input-bg: #141921;
+  --sidebar-bg: #141921;
+  --nav-bg: #141921;
+  --bubble-in: var(--bubble-received);
+  --bubble-in-text: var(--text-main);
+  --bubble-out: var(--bubble-sent);
+  --bubble-out-text: #ffffff;
 }
 
 [data-theme="nightowl"] {
