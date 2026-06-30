@@ -1941,3 +1941,21 @@ audio {
   margin-top: 4px;
   word-break: break-word;
 }
+
+/* === Fixing Image Issue: Displaying it inside a modal; Preventing it from opening into another blank page.  ===*/
+.image-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  cursor: pointer;
+}
+
+.image-modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+}

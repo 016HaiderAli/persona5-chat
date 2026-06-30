@@ -46,6 +46,7 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
   // reply state is managed by parent `Chat` component; `setReplyTo` is passed in
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [fullImage, setFullImage] = useState(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -514,11 +515,17 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
                                   src={msg.imageData}
                                   alt="Shared"
                                   className="msg-image"
-                                  onClick={() => window.open(msg.imageData, "_blank")}
+                                  onClick={() => setFullImage(msg.imageData)}
                                 />
                               )}
                               {msg.text && msg.text !== "📷 Image" && (
                                 <div className="msg-caption">{msg.text}</div>
+                              )}
+
+                              {fullImage && (
+                                <div className="image-modal-overlay" onClick={() => setFullImage(null)}>
+                                  <img src={fullImage} alt="Full size" className="image-modal-content" />
+                                </div>
                               )}
                             </div>
     
