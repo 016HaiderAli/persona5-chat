@@ -32,7 +32,8 @@ function Login() {
       }
       navigate("/chat");
     } catch (err) {
-      setError(err.message.replace("Firebase: ", ""));
+      console.error("auth error", err);
+      setError(`${err.code || "auth/error"}: ${err.message.replace("Firebase: ", "")}`);
     }
     setLoading(false);
   };
@@ -64,7 +65,7 @@ function Login() {
 
       <div className="login-card">
         <div className="login-logo">
-          <div class="login-logo-icon">⚡</div>
+          <div className="login-logo-icon">⚡</div>
           <div className="login-logo-text">
             Phantom<span>Chat</span>
           </div>
