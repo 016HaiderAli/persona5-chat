@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
+import { useMessages } from "../hooks/useMessages";
 import { Send, Mic, Paperclip, Smile, X, Pause, Play, StopCircle, Trash2, Download, Volume2, SlidersHorizontal } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import { playSentSound } from "../utils/sounds";
@@ -12,6 +11,7 @@ function MessageInput({ activeChat, replyTo, setReplyTo }) {
   const [recordingPaused, setRecordingPaused] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const { user } = useAuth();
+  const { sendMessage, sendVoiceMessage: pbSendVoiceMessage } = useMessages(activeChat?.id, activeChat?.type);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -42,16 +42,12 @@ function MessageInput({ activeChat, replyTo, setReplyTo }) {
 
     try {
       if (audioBlob) {
-        await sendVoiceBlob(audioBlob);
+        await pbSendVoiceMessage(audioBlob);
       } else {
-        await addDoc(collection(db, activeChat.type, activeChat.id, "messages"), {
-          text: text.trim() || "📷 Image",
+        await sendMessage({
+          text: text.trim() || (imagePreview ? "📷 Image" : ""),
           imageData: imagePreview || null,
-          uid: user.uid,
-          authorName: user.displayName || user.email.split("@")[0],
-          createdAt: serverTimestamp(),
           type: imagePreview ? "image" : "text",
-          status: "delivered",
           replyTo: replyTo ? { ...replyTo } : null,
         });
       }
@@ -103,35 +99,11 @@ function MessageInput({ activeChat, replyTo, setReplyTo }) {
   //   }
   // };
 
-  // Function to handle sending voice messages (attach audioData as data URL)
-  const sendVoiceBlob = async (blob) => {
-    if (!blob || !activeChat) return;
-    try {
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
-      await addDoc(collection(db, activeChat.type, activeChat.id, "messages"), {
-        text: text.trim() || "🎤 Voice message",
-        audioData: dataUrl,
-        uid: user.uid,
-        authorName: user.displayName || user.email.split("@")[0],
-        createdAt: serverTimestamp(),
-        type: "voice",
-        status: "delivered",
-        replyTo: replyTo ? { ...replyTo } : null,
-      });
-    } catch (error) {
-      console.error("Error sending voice:", error);
-    }
-  };
+  // sendVoiceMessage will delegate to the PocketBase-backed hook
 
   const sendVoiceMessage = async () => {
     if (!audioBlob || !activeChat) return;
-    await sendVoiceBlob(audioBlob);
+    await pbSendVoiceMessage(audioBlob);
     setAudioBlob(null);
     setAudioUrl(null);
     setText("");

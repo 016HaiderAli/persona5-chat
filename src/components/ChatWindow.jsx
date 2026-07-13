@@ -2,8 +2,7 @@ import { useMessages } from "../hooks/useMessages";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Search, Phone, MoreHorizontal, Reply, Forward, Pin, Trash2, Mic, X, Play, Pause } from "lucide-react";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { pb } from "../services/backend.js";
 import { playMessageSound } from "../utils/sounds";
 
 // TickIcon component for message status
@@ -54,17 +53,13 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
 
   const formatTime = (timestamp) => {
     if (!timestamp) return "";
-    let dateObj = null;
-    if (timestamp?.toDate && typeof timestamp.toDate === "function") {
-      dateObj = timestamp.toDate();
-    } else if (typeof timestamp === "number") {
-      dateObj = new Date(timestamp);
-    } else if (timestamp instanceof Date) {
-      dateObj = timestamp;
-    } else {
+    let dateObj;
+    try {
+      dateObj = timestamp instanceof Date ? timestamp : new Date(timestamp);
+      if (isNaN(dateObj.getTime())) return "";
+    } catch (e) {
       return "";
     }
-
     return dateObj.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
@@ -346,37 +341,24 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
 
   const handleReact = async (msgId, emoji) => {
     if (!activeChat?.id || !activeChat?.type || !user?.uid) return;
-    const msgRef = doc(db, activeChat.type, activeChat.id, "messages", msgId);
-    const msgSnap = await getDoc(msgRef);
-    if (!msgSnap.exists()) return;
-
-    const reactions = msgSnap.data().reactions || {};
-    
-    const previousEmoji = Object.keys(reactions).find(
-      (e) => reactions[e]?.includes(user.uid)
-    );
-
-    const updates = {};
-
-    if (previousEmoji && previousEmoji !== emoji) {
-      updates[`reactions.${previousEmoji}`] = reactions[previousEmoji].filter(
-        (uid) => uid !== user.uid
-      );
-    }
-
-    const currentUsers = reactions[emoji] || [];
-    const alreadyReacted = currentUsers.includes(user.uid);
-
-    if (alreadyReacted) {
-      updates[`reactions.${emoji}`] = currentUsers.filter(
-        (uid) => uid !== user.uid
-      );
-    } else if (!previousEmoji || previousEmoji !== emoji) {
-      updates[`reactions.${emoji}`] = [...currentUsers, user.uid];
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await updateDoc(msgRef, updates);
+    try {
+      const rec = await pb.collection('messages').getOne(msgId);
+      if (!rec) return;
+      const reactions = rec.reactions || {};
+      const previousEmoji = Object.keys(reactions).find((e) => (reactions[e] || []).includes(user.uid));
+      const currentUsers = reactions[emoji] || [];
+      let next = { ...reactions };
+      if (previousEmoji && previousEmoji !== emoji) {
+        next[previousEmoji] = (next[previousEmoji] || []).filter((id) => id !== user.uid);
+      }
+      if (currentUsers.includes(user.uid)) {
+        next[emoji] = currentUsers.filter((id) => id !== user.uid);
+      } else {
+        next[emoji] = [...currentUsers, user.uid];
+      }
+      await pb.collection('messages').update(msgId, { reactions: next });
+    } catch (err) {
+      console.error('Failed to react to message', err);
     }
   };
 
@@ -398,7 +380,11 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
   // Delete message function
   const handleDelete = async (msgId) => {
     if (!activeChat?.id || !activeChat?.type) return;
-    await deleteDoc(doc(db, activeChat.type, activeChat.id, "messages", msgId));
+    try {
+      await pb.collection('messages').delete(msgId);
+    } catch (err) {
+      console.error('Failed to delete message', err);
+    }
     closeContext();
   };
 
@@ -407,7 +393,7 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
   useEffect(() => {
     if (messages.length > prevCountRef.current && prevCountRef.current !== 0) {
       const lastMsg = messages[messages.length - 1];
-      if (lastMsg.uid !== user?.uid) {
+      if (lastMsg.senderId !== user?.uid) {
         playMessageSound();
       }
     }
@@ -482,8 +468,8 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
 
           
             displayMessages.map((msg) => {
-              const isOwn = msg.uid === user?.uid;
-              const initial = (msg.authorName || "?")?.[0]?.toUpperCase();
+              const isOwn = (msg.senderId || msg.uid) === user?.uid;
+              const initial = (msg.authorName || msg.displayName || "?")?.[0]?.toUpperCase();
               return (
                 <div key={msg.id} className={`msg ${isOwn ? "own" : "other"}`}
                   onContextMenu={(e) => handleRightClick(e, msg, isOwn)}>

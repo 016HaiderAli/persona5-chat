@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "../firebase/firebase";
+import { pb } from "../services/backend.js";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useRooms } from "../hooks/useRooms";
@@ -17,24 +16,78 @@ function Sidebar({ activeChat, setActiveChat, showSidebar }) {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-      setUsers(
-        snapshot.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((u) => u.id !== user?.uid)
-      );
+    let mounted = true;
+    let unsub = null;
+
+    const mapUser = (d) => ({
+      id: d.id,
+      displayName: d.name || d.displayName || d.username || null,
+      email: d.email || null,
+      online: !!d.online,
     });
-    return unsub;
-  }, [user]);
+
+    const loadUsers = async () => {
+      try {
+        const list = await pb.collection('users').getFullList({ requestKey: null });
+        if (!mounted) return;
+        const plain = list.map(mapUser).filter((u) => u.id !== (user?.uid || user?.id));
+        setUsers(plain);
+      } catch (e) {
+        console.error('Failed to load users from PocketBase', e);
+      }
+    };
+
+    loadUsers();
+
+    const handleEvent = (e) => {
+      if (!mounted || !e?.record) return;
+      const rec = e.record;
+      const mapped = mapUser(rec);
+      setUsers((prev) => {
+        const existingIndex = prev.findIndex((p) => p.id === mapped.id);
+        if (e.action === 'create') {
+          if (existingIndex !== -1) return prev;
+          return [...prev, mapped].filter((u) => u.id !== (user?.uid || user?.id));
+        }
+        if (e.action === 'update') {
+          if (existingIndex === -1) return prev.concat(mapped).filter((u) => u.id !== (user?.uid || user?.id));
+          const next = prev.slice(); next[existingIndex] = mapped; return next;
+        }
+        if (e.action === 'delete') {
+          return prev.filter((p) => p.id !== mapped.id);
+        }
+        return prev;
+      });
+    };
+
+    try {
+      unsub = pb.collection('users').subscribe('*', handleEvent);
+    } catch (e) {
+      // ignore subscribe errors
+    }
+
+    return () => {
+      mounted = false;
+      if (unsub) {
+        try {
+          if (typeof unsub === 'function') unsub();
+          else if (unsub.unsubscribe) unsub.unsubscribe();
+        } catch (err) {}
+      }
+    };
+  }, []);
 
   const handleCreateRoom = async () => {
     if (!newRoomName.trim()) return;
-    await addDoc(collection(db, "rooms"), {
-      name: newRoomName.trim(),
-      createdBy: user.uid,
-      createdAt: serverTimestamp(),
-      emoji: "💬",
-    });
+    try {
+      await pb.collection('rooms').create({
+        name: newRoomName.trim(),
+        createdBy: user?.uid || user?.id,
+        emoji: "💬",
+      });
+    } catch (e) {
+      console.error('Failed to create room', e);
+    }
     setNewRoomName("");
     setShowCreateRoom(false);
   };

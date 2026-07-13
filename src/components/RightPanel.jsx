@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, doc, deleteDoc, updateDoc  } from "firebase/firestore";
-import { db } from "../firebase/firebase";
 import { X, Image, Video, FileText, Link, Mic, BellOff, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { pb } from "../services/backend.js";
 
 function RightPanel({ activeChat, setShowPanel }) {
   const [members, setMembers] = useState([]);
@@ -26,10 +25,38 @@ function RightPanel({ activeChat, setShowPanel }) {
   {/* Load mute state on mount */}
   useEffect(() => {
     if (!activeChat) return;
-    const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-      setMembers(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    let mounted = true;
+    let unsub = null;
+    const mapUser = (d) => ({
+      id: d.id,
+      displayName: d.name || d.displayName || d.username || null,
+      email: d.email || null,
+      online: !!d.online,
     });
-    return unsub;
+    const load = async () => {
+      try {
+        const list = await pb.collection('users').getFullList({ requestKey: null });
+        if (!mounted) return;
+        setMembers(list.map(mapUser));
+      } catch (e) {
+        console.error('Failed to load members', e);
+      }
+    };
+    load();
+    try {
+      unsub = pb.collection('users').subscribe('*', (e) => {
+        if (!mounted || !e?.record) return;
+        const rec = e.record; const mapped = mapUser(rec);
+        setMembers((prev) => {
+          const idx = prev.findIndex(p => p.id === mapped.id);
+          if (e.action === 'create') return [...prev, mapped];
+          if (e.action === 'update') { if (idx === -1) return prev.concat(mapped); const next = prev.slice(); next[idx] = mapped; return next; }
+          if (e.action === 'delete') return prev.filter(p => p.id !== mapped.id);
+          return prev;
+        });
+      });
+    } catch (e) {}
+    return () => { mounted = false; if (unsub) { try { if (typeof unsub === 'function') unsub(); else if (unsub.unsubscribe) unsub.unsubscribe(); } catch (err) {} } };
   }, [activeChat]);
 
   {/* Determine if the active chat is a room or a direct message */}

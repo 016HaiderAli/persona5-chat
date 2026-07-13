@@ -3,11 +3,8 @@ import Sidebar from "../components/Sidebar";
 import ChatWindow from "../components/ChatWindow";
 import MessageInput from "../components/MessageInput";
 import RightPanel from "../components/RightPanel";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { pb } from "../services/backend.js";
 import { useAuth } from "../context/AuthContext";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebase";
 import "../styles/chat.css";
 import { MessageSquare, Users, Settings, User, Power } from "lucide-react";
 
@@ -21,31 +18,22 @@ function Chat() {
 
   useEffect(() => {
     if (user) {
-      const userRef = doc(db, "users", user.uid);
-      getDoc(userRef).then((docSnap) => {
-        if (!docSnap.exists()) {
-          setDoc(userRef, {
-            email: user.email,
-            displayName: user.displayName || user.email.split("@")[0],
-            photoURL: user.photoURL || "",
-            createdAt: serverTimestamp(),
-            lastSeen: serverTimestamp(),
-          });
-        } else {
-          setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true });
-        }
-      });
+      pb.collection("users").update(user.id, {
+        displayName: user.displayName || user.email?.split("@")[0] || "",
+        photoURL: user.photoURL || "",
+        lastSeen: new Date().toISOString(),
+      }).catch(() => {});
     }
   }, [user]);
 
   const handleLogout = async () => {
     setShowPowerDrawer(false);
-    await signOut(auth);
+    pb.authStore.clear();
   };
 
   const handleSwitchAccount = async () => {
     setShowPowerDrawer(false);
-    await signOut(auth);
+    pb.authStore.clear();
   };
 
   const handlePowerClick = () => {

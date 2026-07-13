@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
-import { auth } from "../firebase/firebase";
+import { pb } from "../services/backend.js";
 import { useTheme } from "../context/ThemeContext";
-
-const googleProvider = new GoogleAuthProvider();
 
 function Login() {
   const [isRegister, setIsRegister] = useState(false);
@@ -26,24 +18,29 @@ function Login() {
     setLoading(true);
     try {
       if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await pb.collection("users").create({
+          email,
+          password,
+          passwordConfirm: password,
+        });
+        await pb.collection("users").authWithPassword(email, password);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await pb.collection("users").authWithPassword(email, password);
       }
       navigate("/chat");
     } catch (err) {
       console.error("auth error", err);
-      setError(`${err.code || "auth/error"}: ${err.message.replace("Firebase: ", "")}`);
+      setError(err.message || "Authentication failed");
     }
     setLoading(false);
   };
 
   const handleGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      await pb.collection("users").authWithOAuth2({ provider: "google" });
       navigate("/chat");
     } catch (err) {
-      setError(err.message.replace("Firebase: ", ""));
+      setError(err.message || "Google sign-in failed");
     }
   };
 
