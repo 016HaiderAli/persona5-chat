@@ -123,19 +123,6 @@
   position: relative;
 }
 
-.ib-user {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--primary-brand);
-  color: #0b0e14;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-}
-
 .power-btn {
   width: 34px;
   height: 34px;

@@ -61,9 +61,6 @@ function Chat() {
           </div>
         </div>
         <div className="ib-bottom">
-          <div className="ib-user">
-            {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-          </div>
           <button
             className={`power-btn ${showPowerDrawer ? "power-alert" : ""}`}
             onClick={handlePowerClick}
