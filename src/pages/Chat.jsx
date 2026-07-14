@@ -3,8 +3,11 @@ import Sidebar from "../components/Sidebar";
 import ChatWindow from "../components/ChatWindow";
 import MessageInput from "../components/MessageInput";
 import RightPanel from "../components/RightPanel";
+import ProfileDrawer from "../components/ProfileDrawer";
+import SettingsDrawer from "../components/SettingsDrawer";
 import { pb } from "../services/backend.js";
 import { useAuth } from "../context/AuthContext";
+import { usePanel } from "../context/PanelContext.jsx";
 import "../styles/chat.css";
 import { MessageSquare, Users, Settings, User, Power } from "lucide-react";
 
@@ -13,6 +16,7 @@ function Chat() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showPanel, setShowPanel] = useState(true);
   const [showPowerDrawer, setShowPowerDrawer] = useState(false);
+  const { open, close, toggle, activePanel } = usePanel();
   const { user } = useAuth();
   const [replyTo, setReplyTo] = useState(null);
 
@@ -22,18 +26,26 @@ function Chat() {
         displayName: user.displayName || user.email?.split("@")[0] || "",
         photoURL: user.photoURL || "",
         lastSeen: new Date().toISOString(),
-      }).catch(() => {});
+      }, { requestKey: null }).catch(() => {});
     }
   }, [user]);
 
   const handleLogout = async () => {
     setShowPowerDrawer(false);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
     pb.authStore.clear();
+    window.location.reload();
   };
 
   const handleSwitchAccount = async () => {
     setShowPowerDrawer(false);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
     pb.authStore.clear();
+    window.location.reload();
   };
 
   const handlePowerClick = () => {
@@ -53,10 +65,10 @@ function Chat() {
           <div className="ib-item" data-tooltip="Groups" aria-label="Groups">
             <Users size={22} />
           </div>
-          <div className="ib-item" data-tooltip="App Settings" aria-label="App Settings" onClick={() => setShowPanel((prev) => !prev)}>
+          <div className="ib-item" data-tooltip="Settings" aria-label="Settings" onClick={() => open('settings')}>
             <Settings size={22} />
           </div>
-          <div className="ib-item" data-tooltip="Profile" aria-label="Profile">
+          <div className="ib-item" data-tooltip="Profile" aria-label="Profile" onClick={() => open('profile')}>
             <User size={22} />
           </div>
         </div>
@@ -105,7 +117,7 @@ function Chat() {
             <div className="empty-state">
               <div className="empty-icon">⚡</div>
               <h2>Welcome to PhantomChat</h2>
-              <p>Select a conversation to start messaging</p>
+              <p>Select a conversation or tap Mona AI to start messaging</p>
             </div>
           </div>
         )}
@@ -118,6 +130,10 @@ function Chat() {
           setShowPanel={setShowPanel}
         />
       )}
+
+      {/* Profile & Settings drawers */}
+      <ProfileDrawer isOpen={activePanel === 'profile'} onClose={() => close('profile')} />
+      <SettingsDrawer isOpen={activePanel === 'settings'} onClose={() => close('settings')} />
 
     </div>
   );

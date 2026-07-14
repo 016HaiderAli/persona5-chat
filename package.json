@@ -4,16 +4,21 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node server.js",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "server": "nodemon server.js"
+    "start": "NODE_ENV=production node server.js"
   },
   "dependencies": {
+    "@google/genai": "^2.11.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
     "emoji-picker-react": "^4.19.1",
     "express": "^5.2.1",
+    "http-proxy": "^1.18.1",
     "lucide-react": "^1.21.0",
+    "motion": "^12.42.2",
     "pocketbase": "^0.27.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

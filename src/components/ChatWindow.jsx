@@ -2,7 +2,7 @@ import { useMessages } from "../hooks/useMessages";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Search, Phone, MoreHorizontal, Reply, Forward, Pin, Trash2, Mic, X, Play, Pause } from "lucide-react";
-import { pb } from "../services/backend.js";
+import { pb, socket } from "../services/backend.js";
 import { playMessageSound } from "../utils/sounds";
 
 // TickIcon component for message status
@@ -32,24 +32,211 @@ function TickIcon({ status }) {
 
 // Refactored MessageStatus for High Visibility & Sharp Look
 export function MessageStatus({ status }) {
-  // Reuse local TickIcon SVGs for consistent tick visuals
   return <TickIcon status={status || "sent"} />;
 }
 
 function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
-  const { messages, loading } = useMessages(activeChat?.id, activeChat?.type);
+  const { messages, loading, loadMoreMessages, hasMore, loadingMore } = useMessages(activeChat?.id, activeChat?.type);
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
-// contextMenu = { msgId, x, y, isOwn }
-  // reply state is managed by parent `Chat` component; `setReplyTo` is passed in
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [fullImage, setFullImage] = useState(null);
+  const [liveMessages, setLiveMessages] = useState([]);
+  const [relationship, setRelationship] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+
+  const otherUserId = activeChat?.type === "dms"
+    ? activeChat.id.split("_").find(id => id !== user?.id)
+    : null;
+
+  // Sync hook messages with live messages state
+  useEffect(() => {
+    setLiveMessages(messages);
+  }, [messages]);
+
+  // Handle relationship requests context for privacy read receipts
+  useEffect(() => {
+    if (activeChat?.type !== "dms" || !otherUserId || !user) {
+      setRelationship(null);
+      return;
+    }
+    
+    const fetchRel = async () => {
+      try {
+        const list = await pb.collection('relationships').getFullList({
+          filter: `(user_id = "${user.id}" && target_id = "${otherUserId}") || (user_id = "${otherUserId}" && target_id = "${user.id}")`,
+          requestKey: null
+        });
+        if (list.length > 0) {
+          setRelationship(list[0]);
+        } else {
+          setRelationship(null);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch relationship", err);
+      }
+    };
+    
+    fetchRel();
+    
+    let unsub = null;
+    try {
+      unsub = pb.collection('relationships').subscribe('*', () => {
+        fetchRel();
+      });
+    } catch (e) {}
+    
+    return () => {
+      if (unsub) {
+        try {
+          if (typeof unsub === 'function') unsub();
+          else if (unsub.unsubscribe) unsub.unsubscribe();
+        } catch (e) {}
+      }
+    };
+  }, [activeChat, otherUserId, user]);
+
+  // Mark unread messages as read (privacy guarded)
+  useEffect(() => {
+    if (!activeChat || !user || !liveMessages.length) return;
+    
+    const isAcceptedFriend = activeChat.type === "dms" && relationship?.status === "accepted";
+    const isPublicRoom = activeChat.type === "rooms";
+    
+    if (!isPublicRoom && !isAcceptedFriend) return;
+    
+    const unreadMessages = liveMessages.filter(
+      (m) => m.senderId !== user.id && m.status !== "read"
+    );
+    
+    if (unreadMessages.length === 0) return;
+    
+    const markAsRead = async () => {
+      try {
+        await Promise.all(
+          unreadMessages.map((m) =>
+            pb.collection("messages").update(m.id, { status: "read" }, { requestKey: null })
+          )
+        );
+        if (socket && socket.emit) {
+          socket.emit("message_read", {
+            roomId: activeChat.id,
+            readerId: user.id
+          });
+        }
+      } catch (err) {
+        console.warn("Failed to mark messages as read", err);
+      }
+    };
+    
+    markAsRead();
+  }, [liveMessages, activeChat, relationship, user]);
+
+  // Handle live incoming read receipts
+  useEffect(() => {
+    if (!socket || !activeChat) return;
+
+    const handleMessageRead = (data) => {
+      if (data.roomId === activeChat.id && data.readerId !== user?.id) {
+        setLiveMessages((prev) =>
+          prev.map((m) => (m.senderId === user?.id ? { ...m, status: "read" } : m))
+        );
+      }
+    };
+
+    socket.on('message_read', handleMessageRead);
+
+    return () => {
+      socket.off('message_read', handleMessageRead);
+    };
+  }, [activeChat, user]);
+
+  // Execute historical search filter against PocketBase messages collection inside the active room
+  useEffect(() => {
+    if (!searchQuery.trim() || !activeChat) {
+      setSearchResults([]);
+      return;
+    }
+    
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const list = await pb.collection('messages').getFullList({
+          filter: `roomId = "${activeChat.id}" && text ~ "${searchQuery}"`,
+          requestKey: null
+        });
+        setSearchResults(list.map(r => r.id));
+      } catch (err) {
+        console.warn("Historical search failed", err);
+      }
+    }, 300);
+    
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, activeChat]);
+
+  // Helper to highlight matching text queries
+  const highlightText = (text, highlight) => {
+    if (!highlight || !text) return text;
+    const parts = text.split(new RegExp(`(${highlight.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'));
+    return (
+      <span>
+        {parts.map((part, i) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <mark key={i} className="bg-yellow-400 text-black px-0.5 rounded font-bold">{part}</mark>
+          ) : (
+            part
+          )
+        )}
+      </span>
+    );
+  };
+  
+  // Real-time typing indicators state
+  const [typingUsers, setTypingUsers] = useState({}); // { [userId]: username }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Connect Socket.io Typing Telemetry
+  useEffect(() => {
+    if (!socket || !activeChat) return;
+
+    const handleTypingStart = (data) => {
+      if (data.roomId === activeChat.id && data.userId !== user?.id && data.userId !== user?.uid) {
+        setTypingUsers((prev) => ({
+          ...prev,
+          [data.userId]: data.username || 'Someone',
+        }));
+      }
+    };
+
+    const handleTypingStop = (data) => {
+      if (data.roomId === activeChat.id) {
+        setTypingUsers((prev) => {
+          const next = { ...prev };
+          delete next[data.userId];
+          return next;
+        });
+      }
+    };
+
+    socket.on('typing_start', handleTypingStart);
+    socket.on('user_typing_start', handleTypingStart);
+    socket.on('typing_stop', handleTypingStop);
+    socket.on('user_typing_stop', handleTypingStop);
+
+    // Reset indicator list when moving across rooms
+    setTypingUsers({});
+
+    return () => {
+      socket.off('typing_start', handleTypingStart);
+      socket.off('user_typing_start', handleTypingStart);
+      socket.off('typing_stop', handleTypingStop);
+      socket.off('user_typing_stop', handleTypingStop);
+    };
+  }, [activeChat, user]);
 
   const formatTime = (timestamp) => {
     if (!timestamp) return "";
@@ -332,29 +519,30 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
     );
   };
 
-  {/* Filter messages based on search query */}
+  // Filter messages based on search query
   const displayMessages = searchQuery
-  ? messages.filter(m =>
-      m.text?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  : messages;
+    ? liveMessages.filter(m =>
+        m.text?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : liveMessages;
 
   const handleReact = async (msgId, emoji) => {
-    if (!activeChat?.id || !activeChat?.type || !user?.uid) return;
+    if (!activeChat?.id || !user) return;
+    const currentUserId = user.id || user.uid;
     try {
       const rec = await pb.collection('messages').getOne(msgId);
       if (!rec) return;
       const reactions = rec.reactions || {};
-      const previousEmoji = Object.keys(reactions).find((e) => (reactions[e] || []).includes(user.uid));
+      const previousEmoji = Object.keys(reactions).find((e) => (reactions[e] || []).includes(currentUserId));
       const currentUsers = reactions[emoji] || [];
       let next = { ...reactions };
       if (previousEmoji && previousEmoji !== emoji) {
-        next[previousEmoji] = (next[previousEmoji] || []).filter((id) => id !== user.uid);
+        next[previousEmoji] = (next[previousEmoji] || []).filter((id) => id !== currentUserId);
       }
-      if (currentUsers.includes(user.uid)) {
-        next[emoji] = currentUsers.filter((id) => id !== user.uid);
+      if (currentUsers.includes(currentUserId)) {
+        next[emoji] = currentUsers.filter((id) => id !== currentUserId);
       } else {
-        next[emoji] = [...currentUsers, user.uid];
+        next[emoji] = [...currentUsers, currentUserId];
       }
       await pb.collection('messages').update(msgId, { reactions: next });
     } catch (err) {
@@ -362,24 +550,21 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
     }
   };
 
-  // Right-click context menu for message actions
   const handleRightClick = (e, msg, isOwn) => {
-  e.preventDefault();
-  setContextMenu({
-    msgId: msg.id,
-    msg,
-    x: e.clientX,
-    y: e.clientY,
-    isOwn,
-  });
+    e.preventDefault();
+    setContextMenu({
+      msgId: msg.id,
+      msg,
+      x: e.clientX,
+      y: e.clientY,
+      isOwn,
+    });
   };
 
-  // Close context menu when clicking outside
   const closeContext = () => setContextMenu(null);
 
-  // Delete message function
   const handleDelete = async (msgId) => {
-    if (!activeChat?.id || !activeChat?.type) return;
+    if (!activeChat?.id) return;
     try {
       await pb.collection('messages').delete(msgId);
     } catch (err) {
@@ -391,25 +576,46 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
   const prevCountRef = useRef(0);
 
   useEffect(() => {
+    const currentUserId = user?.id || user?.uid;
     if (messages.length > prevCountRef.current && prevCountRef.current !== 0) {
       const lastMsg = messages[messages.length - 1];
-      if (lastMsg.senderId !== user?.uid) {
-        playMessageSound();
+      if (lastMsg.senderId !== currentUserId) {
+        // play alert chime mapping based on localStorage user choice
+        const soundChoice = localStorage.getItem(`sound_choice_${currentUserId}`) || 'phantom_chime.mp3';
+        // Dynamically play custom retro tone fallback if asset is missing
+        try {
+          const audioPath = `/sounds/${soundChoice}`;
+          const audio = new Audio(audioPath);
+          audio.play().catch(() => {
+            // Synthesizer fallback
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.25);
+          });
+        } catch (e) {}
       }
     }
     prevCountRef.current = messages.length;
-  }, [messages, user?.uid]);
+  }, [messages, user]);
 
   return (
     <div className="chat-window">
       <div className="chat-header">
         <div className="ch-av">
-          {activeChat?.type === "dms" ? "💬" : "🌐"}
+          {activeChat?.type === "dms" ? "💬" : activeChat?.type === "ai_bot" ? "🐱" : "🌐"}
         </div>
         <div className="ch-info">
           <div className="ch-name">{activeChat?.name}</div>
           <div className="ch-sub">
-            {activeChat?.type === "rooms" ? "Public Room" : "Direct Message"}
+            {activeChat?.type === "rooms" ? "Public Room" : activeChat?.type === "ai_bot" ? "Core Advisor AI" : "Direct Message"}
           </div>
         </div>
         <div className="ch-actions">
@@ -435,7 +641,6 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
         </div>
       </div>
 
-      {/* Added Search bar */}
       {showSearch && (
         <div className="chat-search-bar">
           <Search size={14} />
@@ -447,7 +652,7 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
           />
           {searchQuery && (
             <span className="search-count">
-              {messages.filter(m => m.text?.toLowerCase().includes(searchQuery.toLowerCase())).length} results
+              {searchResults.length} results
             </span>
           )}
           <button onClick={() => { setShowSearch(false); setSearchQuery(""); }}>
@@ -457,95 +662,100 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
       )}
 
       <div className="msgs-container">
+        {!loading && hasMore && activeChat?.id !== 'mona_ai' && (
+          <button
+            onClick={loadMoreMessages}
+            disabled={loadingMore}
+            className="w-full py-2.5 text-[10px] font-mono font-black tracking-widest text-center text-red-500 hover:text-white bg-[#141921]/90 border border-red-500/20 rounded-lg mb-4 hover:bg-red-600/20 hover:border-red-500/50 transition duration-200 transform hover:-skew-x-6 uppercase cursor-pointer shrink-0"
+          >
+            {loadingMore ? "DOWNLOADING OLD RECORDS..." : "LOAD PREVIOUS TRANSMISSIONS"}
+          </button>
+        )}
         {loading ? (
           <div className="msgs-loading">Loading messages...</div>
-        ) : messages.length === 0 ? (
+        ) : liveMessages.length === 0 ? (
           <div className="msgs-empty">
             <span>👋</span>
             <p>No messages yet — say hello!</p>
           </div>
         ) : (
+          displayMessages.map((msg) => {
+            const currentUserId = user?.id || user?.uid;
+            const isOwn = msg.senderId === currentUserId || msg.uid === currentUserId;
+            const initial = (msg.senderName || msg.authorName || msg.displayName || "?")?.[0]?.toUpperCase();
+            const isHighlighted = searchQuery && searchResults.includes(msg.id);
+            return (
+              <div key={msg.id} className={`msg ${isOwn ? "own" : "other"} ${isHighlighted ? "msg-search-highlight shadow-[0_0_15px_rgba(239,68,68,0.5)] border border-red-500/50" : ""}`}
+                onContextMenu={(e) => handleRightClick(e, msg, isOwn)}>
 
-          
-            displayMessages.map((msg) => {
-              const isOwn = (msg.senderId || msg.uid) === user?.uid;
-              const initial = (msg.authorName || msg.displayName || "?")?.[0]?.toUpperCase();
-              return (
-                <div key={msg.id} className={`msg ${isOwn ? "own" : "other"}`}
-                  onContextMenu={(e) => handleRightClick(e, msg, isOwn)}>
+                <div className={`msg-av ${isOwn ? "own" : ""}`}>
+                  {initial}
+                </div>
+                <div className="msg-body">
+                  {!isOwn && (
+                    <div className="msg-name">{msg.senderName || msg.authorName}</div>
+                  )}
+                  <div className="bubble-wrap">
 
-                  <div className={`msg-av ${isOwn ? "own" : ""}`}>
-                    {initial}
-                  </div>
-                  <div className="msg-body">
-                    {!isOwn && (
-                      <div className="msg-name">{msg.authorName}</div>
-                    )}
-                    <div className="bubble-wrap">
+                    <div className={`bubble ${isOwn ? "own" : ""}`}>
+                      {msg.replyTo && (
+                        <div className="reply-quote">
+                          <div className="reply-quote-name">{msg.replyTo.authorName}</div>
+                          <div className="reply-quote-text">{msg.replyTo.text}</div>
+                        </div>
+                      )}
 
-                      {/* Render voice message */}
-                      <div className={`bubble ${isOwn ? "own" : ""}`}>
-                        {msg.replyTo && (
-                          <div className="reply-quote">
-                            <div className="reply-quote-name">{msg.replyTo.authorName}</div>
-                            <div className="reply-quote-text">{msg.replyTo.text}</div>
-                          </div>
-                        )}
+                      {msg.type === "image" ? (
+                        <div className="msg-image-wrapper">
+                          {msg.imageData && (
+                            <img
+                              src={msg.imageData}
+                              alt="Shared"
+                              className="msg-image"
+                              onClick={() => setFullImage(msg.imageData)}
+                            />
+                          )}
+                          {msg.text && msg.text !== "📷 Image" && (
+                            <div className="msg-caption">{highlightText(msg.text, searchQuery)}</div>
+                          )}
 
-                        {/* Renders images OR text, but handles captions if both exist */}
-                        {msg.type === "image" ? (
-                            <div className="msg-image-wrapper">
-                              {/* Check if imageData exists specifically */}
-                              {msg.imageData && (
-                                <img
-                                  src={msg.imageData}
-                                  alt="Shared"
-                                  className="msg-image"
-                                  onClick={() => setFullImage(msg.imageData)}
-                                />
-                              )}
-                              {msg.text && msg.text !== "📷 Image" && (
-                                <div className="msg-caption">{msg.text}</div>
-                              )}
-
-                              {fullImage && (
-                                <div className="image-modal-overlay" onClick={() => setFullImage(null)}>
-                                  <img src={fullImage} alt="Full size" className="image-modal-content" />
-                                </div>
-                              )}
+                          {fullImage && (
+                            <div className="image-modal-overlay" onClick={() => setFullImage(null)}>
+                              <img src={fullImage} alt="Full size" className="image-modal-content" />
                             </div>
-    
-                          ) : msg.type === "voice" && (msg.audioData || msg.audioUrl) ? (
-                            <div className="voice-msg-player sent-voice-container">
-                              <Mic size={14} />
-                              <SentVoiceMessage src={msg.audioData || msg.audioUrl} />
-                            </div>
-                          ) : (
-                            msg.text
-                          ) 
-                        }
-                      </div>
-                      
-                      {/** Reaction Picker */}
-                      <div className="reaction-picker">
-                        {["❤️","😂","👍","🔥","😮","😢"].map((emoji) => (
-                          <button
-                            key={emoji}
-                            className="reaction-emoji-btn"
-                            onClick={() => handleReact(msg.id, emoji)}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
+                          )}
+                        </div>
+
+                      ) : msg.type === "voice" && (msg.audioData || msg.audioUrl) ? (
+                        <div className="voice-msg-player sent-voice-container">
+                          <Mic size={14} />
+                          <SentVoiceMessage src={msg.audioData || msg.audioUrl} />
+                        </div>
+                      ) : (
+                        highlightText(msg.text, searchQuery)
+                      )}
+                    </div>
+                    
+                    <div className="reaction-picker">
+                      {["❤️","😂","👍","🔥","😮","😢"].map((emoji) => (
+                        <button
+                          key={emoji}
+                          className="reaction-emoji-btn"
+                          onClick={() => handleReact(msg.id, emoji)}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
                   {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                     <div className="reactions-row">
                       {Object.entries(msg.reactions).map(([emoji, users]) =>
                         users.length > 0 ? (
                           <button
                             key={emoji}
-                            className={`reaction-badge ${users.includes(user?.uid) ? "reacted" : ""}`}
+                            className={`reaction-badge ${users.includes(currentUserId) ? "reacted" : ""}`}
                             onClick={() => handleReact(msg.id, emoji)}
                           >
                             {emoji} <span>{users.length}</span>
@@ -555,7 +765,6 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
                     </div>
                   )}
                   
-                  {/* Clean Flex Layout for Perfect Alignment */}
                   <div className="msg-footer">
                     <span className="msg-time">{formatTime(msg.createdAt)}</span>
                     {isOwn && (
@@ -570,36 +779,47 @@ function ChatWindow({ activeChat, setShowPanel, showPanel, setReplyTo }) {
           })
         )}
 
+        {/* Animated Persona 5 style typing indicator notification */}
+        {Object.keys(typingUsers).length > 0 && (
+          <div className="p-3 text-[11px] font-mono font-black italic tracking-wider text-yellow-400 bg-yellow-400/10 border-l-4 border-yellow-400 rounded-r-lg max-w-max mx-4 mb-3 animate-pulse flex items-center gap-1.5 transform -skew-x-6">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-400 animate-ping" />
+            <span>
+              {Object.values(typingUsers).join(', ')}{' '}
+              {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} drafting text...
+            </span>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
       {contextMenu && (
-          <>
-            <div className="context-overlay" onClick={closeContext} />
-            <div
-              className="context-menu"
-              style={{ top: contextMenu.y, left: contextMenu.x }}
-            >
-              <button className="ctx-item" onClick={() => { setReplyTo && setReplyTo(contextMenu.msg); closeContext(); }}>
-                <Reply size={14} /> Reply
+        <>
+          <div className="context-overlay" onClick={closeContext} />
+          <div
+            className="context-menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <button className="ctx-item" onClick={() => { setReplyTo && setReplyTo(contextMenu.msg); closeContext(); }}>
+              <Reply size={14} /> Reply
+            </button>
+            <button className="ctx-item">
+              <Forward size={14} /> Forward
+            </button>
+            <button className="ctx-item">
+              <Pin size={14} /> Pin
+            </button>
+            {contextMenu.isOwn && (
+              <button
+                className="ctx-item danger"
+                onClick={() => handleDelete(contextMenu.msgId)}
+              >
+                <Trash2 size={14} /> Delete
               </button>
-              <button className="ctx-item">
-                <Forward size={14} /> Forward
-              </button>
-              <button className="ctx-item">
-                <Pin size={14} /> Pin
-              </button>
-              {contextMenu.isOwn && (
-                <button
-                  className="ctx-item danger"
-                  onClick={() => handleDelete(contextMenu.msgId)}
-                >
-                  <Trash2 size={14} /> Delete
-                </button>
-              )}
-            </div>
-          </>
-        )}
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

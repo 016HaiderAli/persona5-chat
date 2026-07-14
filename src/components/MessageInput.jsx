@@ -4,6 +4,7 @@ import { useMessages } from "../hooks/useMessages";
 import { Send, Mic, Paperclip, Smile, X, Pause, Play, StopCircle, Trash2, Download, Volume2, SlidersHorizontal } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import { playSentSound } from "../utils/sounds";
+import { socket } from "../services/backend";
 
 function MessageInput({ activeChat, replyTo, setReplyTo }) {
   const [text, setText] = useState("");
@@ -33,12 +34,53 @@ function MessageInput({ activeChat, replyTo, setReplyTo }) {
   const canvasRef = useRef(null);
   const ignoreOnStopRef = useRef(false);
   const fileInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+
+  const handleTextChange = (e) => {
+    const val = e.target.value;
+    setText(val);
+
+    if (!activeChat || !user || !socket) return;
+
+    // Send typing start event
+    if (!typingTimeoutRef.current) {
+      socket.emit('typing_start', {
+        roomId: activeChat.id,
+        userId: user.id,
+        username: user.name || user.username || 'Thief',
+      });
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit('typing_stop', {
+        roomId: activeChat.id,
+        userId: user.id,
+      });
+      typingTimeoutRef.current = null;
+    }, 1500);
+  };
 
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!activeChat) return;
     if (!text.trim() && !imagePreview && !audioBlob) return;
+
+    // Reset typing timeout and notify peer
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    if (socket && user) {
+      socket.emit('typing_stop', {
+        roomId: activeChat.id,
+        userId: user.id,
+      });
+    }
 
     try {
       if (audioBlob) {
@@ -579,7 +621,7 @@ function MessageInput({ activeChat, replyTo, setReplyTo }) {
             // Dynamic placeholder
             placeholder={replyTo ? `Reply to ${replyTo.authorName}...` : `Message ${activeChat?.name || ""}...`}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTextChange}
             maxLength={500}
           />
           <button type="button" className="input-icon-btn" title="Attach" onClick={() => fileInputRef.current?.click()}

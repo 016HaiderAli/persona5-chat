@@ -1,14 +1,19 @@
-// src/services/backend.js
 import PocketBase from 'pocketbase';
 import { io } from 'socket.io-client';
 
-const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
-const socketServerUrl = import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3001';
+// Gateway URL structure for client-side proxy routing:
+// 1. /pb_api/* -> http://127.0.0.1:8090/api/*
+// 2. /socket.io/* -> http://127.0.0.1:3001/socket.io/*
 
-// 1. Initialize PocketBase
-export const pb = new PocketBase(pocketbaseUrl);
+export const pb = new PocketBase('/pb_api');
 
-// 2. Initialize Socket.io
-export const socket = io(socketServerUrl, {
-  autoConnect: true,
-});
+export const socket = io(
+  typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1:3001',
+  {
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    transports: ['websocket', 'polling']
+  }
+);

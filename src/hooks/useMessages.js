@@ -5,6 +5,9 @@ import { useAuth } from "../context/AuthContext";
 export function useMessages(activeChatId, chatType) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
   const msgsRef = useRef([]);
 
@@ -15,27 +18,48 @@ export function useMessages(activeChatId, chatType) {
       return;
     }
 
-    if (!pb) {
-      console.warn('PocketBase client not available');
-      setLoading(false);
-      return;
-    }
-
     let mounted = true;
     setLoading(true);
 
     const loadMessages = async () => {
+      // 1. Check if AI Chatbot context
+      if (activeChatId === 'mona_ai') {
+        const saved = localStorage.getItem('messages_mona_ai');
+        const list = saved ? JSON.parse(saved) : [
+          {
+            id: 'mona_welcome',
+            text: "Hey there! I'm Morgana (Mona), the core helper of PhantomChat! Ask me anything about Palaces, calling cards, brewing coffee at LeBlanc, or getting answers directly from the Gemini API!",
+            senderId: 'mona_ai',
+            senderName: 'Mona AI',
+            createdAt: new Date().toISOString(),
+            type: 'text',
+          }
+        ];
+        msgsRef.current = list;
+        setMessages(list);
+        setLoading(false);
+        return;
+      }
+
+      if (!pb) {
+        console.warn('PocketBase client not available');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const filter = `roomId = \"${activeChatId}\"`;
-        // getFullList is fine for small chats; switch to getList/pagination if needed
-        const list = await pb.collection('messages').getFullList({ filter, sort: 'created', requestKey: null });
+        const filter = `roomId = "${activeChatId}"`;
+        // Fetch page 1 (50 latest messages) sorted in descending order of creation (newest first)
+        const result = await pb.collection('messages').getList(1, 50, { filter, sort: '-created', requestKey: null });
         if (!mounted) return;
-        // Map PocketBase records to a consistent shape
-        const mapped = list.map((r) => ({
+        
+        // Reverse them so they render chronologically
+        const mapped = [...result.items].reverse().map((r) => ({
           id: r.id,
           text: r.text || '',
           imageData: r.imageData || null,
           audioData: r.audioData || null,
+          audioUrl: r.audioData ? `${pb.baseUrl}/api/files/${r.collectionId || 'messages'}/${r.id}/${r.audioData}` : null,
           senderId: r.senderId || null,
           senderName: r.senderName || null,
           createdAt: r.created,
@@ -44,6 +68,8 @@ export function useMessages(activeChatId, chatType) {
         }));
         msgsRef.current = mapped;
         setMessages(mapped);
+        setPage(1);
+        setHasMore(1 < result.totalPages);
       } catch (err) {
         console.error('Failed to load messages from PocketBase', err);
       } finally {
@@ -53,7 +79,9 @@ export function useMessages(activeChatId, chatType) {
 
     loadMessages();
 
-    // PocketBase realtime subscription — update local list on create/update/delete
+    if (activeChatId === 'mona_ai') return; // Skip PocketBase subscription for AI
+
+    // PocketBase realtime subscription
     let pbUnsub = null;
     try {
       pbUnsub = pb.collection('messages').subscribe('*', (e) => {
@@ -67,6 +95,7 @@ export function useMessages(activeChatId, chatType) {
             text: rec.text || '',
             imageData: rec.imageData || null,
             audioData: rec.audioData || null,
+            audioUrl: rec.audioData ? `${pb.baseUrl}/api/files/${rec.collectionId || 'messages'}/${rec.id}/${rec.audioData}` : null,
             senderId: rec.senderId || null,
             senderName: rec.senderName || null,
             roomId: rec.roomId || null,
@@ -74,7 +103,6 @@ export function useMessages(activeChatId, chatType) {
             type: rec.type || 'text',
             replyTo: rec.replyTo || null,
           };
-          // avoid duplicates
           if (!msgsRef.current.find((m) => m.id === newMsg.id)) {
             msgsRef.current = [...msgsRef.current, newMsg];
             setMessages(msgsRef.current.slice());
@@ -91,12 +119,11 @@ export function useMessages(activeChatId, chatType) {
       console.warn('PocketBase subscribe failed', err);
     }
 
-    // Socket.io live updates (hybrid): listen for instant messages
+    // Socket.io live updates
     const socketHandler = (data) => {
       try {
         if (!data) return;
         if (data.roomId !== activeChatId) return;
-        // Avoid duplicate if already present
         if (msgsRef.current.find((m) => m.id === data.id)) return;
         msgsRef.current = [...msgsRef.current, data];
         setMessages(msgsRef.current.slice());
@@ -125,29 +152,120 @@ export function useMessages(activeChatId, chatType) {
     };
   }, [activeChatId, chatType]);
 
-  // sendMessage: save to PocketBase and emit via socket for instant delivery
-  const sendMessage = async ({ text, imageData = null, audioData = null, type = 'text', replyTo = null }) => {
-    if (!activeChatId || !pb) return null;
+  const loadMoreMessages = async () => {
+    if (!hasMore || loadingMore || activeChatId === 'mona_ai') return;
+    setLoadingMore(true);
     try {
-      const payload = {
-        roomId: activeChatId,
-        text: text || (imageData ? '📷 Image' : audioData ? '🎤 Voice message' : ''),
-        senderId: user?.id || user?.uid || null,
-        senderName: user?.displayName || user?.name || user?.email || null,
-        imageData: imageData || null,
-        audioData: audioData || null,
-        type,
-        replyTo: replyTo || null,
+      const nextPage = page + 1;
+      const filter = `roomId = "${activeChatId}"`;
+      const result = await pb.collection('messages').getList(nextPage, 50, { filter, sort: '-created', requestKey: null });
+      
+      const mapped = [...result.items].reverse().map((r) => ({
+        id: r.id,
+        text: r.text || '',
+        imageData: r.imageData || null,
+        audioData: r.audioData || null,
+        audioUrl: r.audioData ? `${pb.baseUrl}/api/files/${r.collectionId || 'messages'}/${r.id}/${r.audioData}` : null,
+        senderId: r.senderId || null,
+        senderName: r.senderName || null,
+        createdAt: r.created,
+        type: r.type || 'text',
+        replyTo: r.replyTo || null,
+      }));
+
+      msgsRef.current = [...mapped, ...msgsRef.current];
+      setMessages(msgsRef.current.slice());
+      setPage(nextPage);
+      setHasMore(nextPage < result.totalPages);
+    } catch (err) {
+      console.error('Failed to load more messages', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const sendMessage = async ({ text, imageData = null, audioFile = null, type = 'text', replyTo = null }) => {
+    if (!activeChatId) return null;
+
+    // AI Agent handler
+    if (activeChatId === 'mona_ai') {
+      const userMsg = {
+        id: 'user_' + Math.random().toString(36).substr(2, 9),
+        text,
+        senderId: user?.id || 'ren_user',
+        senderName: user?.username || 'Ren',
+        createdAt: new Date().toISOString(),
+        type: 'text',
       };
 
-      // create in PocketBase
-      const created = await pb.collection('messages').create(payload);
+      const withUser = [...msgsRef.current, userMsg];
+      msgsRef.current = withUser;
+      setMessages(withUser);
+      localStorage.setItem('messages_mona_ai', JSON.stringify(withUser));
+
+      // Mock typewriter status
+      if (socket && socket.emit) {
+        socket.emit('typing_start', { roomId: 'mona_ai', userId: 'mona_ai', username: 'Mona' });
+      }
+
+      try {
+        const response = await fetch('/api/gemini/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+        });
+        const data = await response.json();
+
+        const botMsg = {
+          id: 'mona_' + Math.random().toString(36).substr(2, 9),
+          text: data.reply || "Ren, I had some network interference. Let's try again!",
+          senderId: 'mona_ai',
+          senderName: 'Mona AI',
+          createdAt: new Date().toISOString(),
+          type: 'text',
+        };
+
+        const withBot = [...msgsRef.current, botMsg];
+        msgsRef.current = withBot;
+        setMessages(withBot);
+        localStorage.setItem('messages_mona_ai', JSON.stringify(withBot));
+      } catch (err) {
+        console.error('AI response failure:', err);
+      } finally {
+        if (socket && socket.emit) {
+          socket.emit('typing_stop', { roomId: 'mona_ai', userId: 'mona_ai' });
+        }
+      }
+      return userMsg;
+    }
+
+    if (!pb) return null;
+
+    try {
+      const formData = new FormData();
+      formData.append('roomId', activeChatId);
+      formData.append('text', text || (imageData ? '📷 Image' : audioFile ? '🎤 Voice message' : ''));
+      formData.append('senderId', user?.id || user?.uid || '');
+      formData.append('senderName', user?.displayName || user?.name || user?.email || '');
+      formData.append('type', type);
+      if (replyTo) {
+        formData.append('replyTo', JSON.stringify(replyTo));
+      }
+      if (imageData) {
+        formData.append('imageData', imageData);
+      }
+      if (audioFile) {
+        formData.append('audioData', audioFile, 'voice-message.webm');
+      }
+
+      const created = await pb.collection('messages').create(formData);
 
       const msg = {
         id: created.id,
         text: created.text,
         imageData: created.imageData || null,
         audioData: created.audioData || null,
+        audioUrl: created.audioData ? `${pb.baseUrl}/api/files/${created.collectionId || 'messages'}/${created.id}/${created.audioData}` : null,
         senderId: created.senderId || null,
         senderName: created.senderName || null,
         roomId: created.roomId || null,
@@ -156,14 +274,12 @@ export function useMessages(activeChatId, chatType) {
         replyTo: created.replyTo || null,
       };
 
-      // emit via socket for immediate broadcast
       try {
         if (socket && socket.emit) socket.emit('send_message', msg);
       } catch (err) {
         console.warn('Socket emit failed', err);
       }
 
-      // update local state optimistically
       if (!msgsRef.current.find((m) => m.id === msg.id)) {
         msgsRef.current = [...msgsRef.current, msg];
         setMessages(msgsRef.current.slice());
@@ -178,19 +294,8 @@ export function useMessages(activeChatId, chatType) {
 
   const sendVoiceMessage = async (blob, textFallback = '🎤 Voice message') => {
     if (!blob) return null;
-    try {
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-      return await sendMessage({ text: textFallback, audioData: dataUrl, type: 'voice' });
-    } catch (err) {
-      console.error('Failed to send voice message', err);
-      throw err;
-    }
+    return await sendMessage({ text: textFallback, audioFile: blob, type: 'voice' });
   };
 
-  return { messages, loading, sendMessage, sendVoiceMessage };
+  return { messages, loading, sendMessage, sendVoiceMessage, loadMoreMessages, hasMore, loadingMore };
 }

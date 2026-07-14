@@ -1,0 +1,6 @@
+{
+  "name": "PhantomChat",
+  "description": "A real-world, highly secure Super-App platform styled with a premium, high-contrast Persona 5 kinetic visual aesthetic, featuring real-time messaging, buddy lists, profile customizing, and integrated Gemini AI helpers.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

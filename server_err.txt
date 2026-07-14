@@ -1,0 +1,227 @@
+(node:17652) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)
+[2m1:46:57 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mFailed to load users from PocketBase ClientResponseError 0: ClientResponseError
+    at http://localhost:3000/node_modules/.vite/deps/pocketbase.js?v=d2967fd0:1199:10
+    at async loadUsers (http://localhost:3000/src/components/Sidebar.jsx:45:18)

@@ -24,6 +24,46 @@
   --bubble-out-text: #ffffff;
 }
 
+/* Drawer panel styling for Profile & Settings redesign */
+.drawer-panel {
+  position: absolute;
+  z-index: 100;
+  left: 80px;
+  top: 0;
+  height: 100%;
+  width: 380px;
+  background: #121214;
+  border-left: 1px solid rgba(255,255,255,0.04);
+  box-shadow: -20px 0 60px rgba(0,0,0,0.6);
+  overflow-y: auto;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), opacity 220ms ease;
+}
+
+.drawer-panel .clip-path-banner { clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); }
+
+.drawer-panel input,
+.drawer-panel textarea,
+.drawer-panel select {
+  background: #0f1416;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #e6edf2;
+  padding: 8px 10px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.drawer-panel input:focus,
+.drawer-panel textarea:focus,
+.drawer-panel select:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); border-color: #ff415b; }
+
+.drawer-panel .danger-zone {
+  background: rgba(255,0,0,0.03);
+  border-top: 1px dashed rgba(255,0,0,0.12);
+  padding: 18px;
+  border-radius: 10px;
+}
+
+
 
 /* === APP LAYOUT === */
 .app-layout {

@@ -1,0 +1,9 @@
+◇ injected env (3) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Embedding Vite Developer environment into port 3000 ingress...
+Standalone Socket.io server running on port 3001
+PhantomChat Core Proxy Gateway active on port 3000
+Socket.io client connected on port 3001: TLIlntKAbGXkP-_eAAAB
+Socket.io client connected on port 3001: 73URlKKIMyaCq9K4AAAD
+Socket.io client disconnected: TLIlntKAbGXkP-_eAAAB
+Socket.io client connected on port 3001: Tl2Y8EwH2kRoBFTrAAAF
+[2m1:54:49 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/Sidebar.jsx[22m
